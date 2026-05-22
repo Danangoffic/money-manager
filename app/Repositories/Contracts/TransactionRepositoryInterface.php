@@ -18,4 +18,10 @@ interface TransactionRepositoryInterface extends BaseRepositoryInterface
     public function sumByMonthForRange(int $householdId, string $startDate, string $endDate): Collection;
 
     public function countByPeriod(int $householdId, string $startDate, string $endDate): int;
+
+    public function getDeletedByHousehold(int $householdId, int $perPage = 15): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+
+    public function restore(int $id): bool;
+
+    public function forceDelete(int $id): bool;
 }
