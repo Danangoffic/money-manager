@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('transactions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('household_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->enum('type', ['income', 'expense', 'transfer']);
+            $table->bigInteger('amount');
+            $table->string('description')->nullable();
+            $table->date('date');
+            $table->foreignId('transfer_to_account_id')->nullable()->constrained('accounts')->nullOnDelete();
+            $table->timestamps();
+
+            $table->index(['household_id', 'date']);
+            $table->index(['household_id', 'type']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('transactions');
+    }
+};
