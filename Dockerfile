@@ -36,6 +36,11 @@ COPY --chown=www-data:www-data --from=frontend /app/public/build ./public/build
 RUN mkdir -p /run/mysqld /var/lib/mysql \
     && chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
+# Note: For persistent MySQL data, attach a Railway Volume mounted at /var/lib/mysql
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost/up || exit 1
+
 EXPOSE 80
 
 ENTRYPOINT ["/entrypoint.sh"]
