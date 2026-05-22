@@ -40,7 +40,7 @@ class GoalTest extends TestCase
             'name' => 'Beli Motor',
             'target_amount' => 20000000,
             'current_amount' => 0,
-            'deadline' => '2025-12-31',
+            'deadline' => now()->addYear()->format('Y-m-d'),
         ]);
 
         $response->assertRedirect(route('goals.index'));
@@ -58,6 +58,7 @@ class GoalTest extends TestCase
             'name' => 'Dana Darurat',
             'target_amount' => 50000000,
             'current_amount' => 5000000,
+            'deadline' => null,
         ]);
 
         $response->assertRedirect(route('goals.index'));

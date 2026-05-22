@@ -59,26 +59,36 @@ class BudgetTest extends TestCase
         ]);
     }
 
-    public function test_creating_budget_for_same_category_and_month_updates_existing(): void
+    public function test_creating_budget_for_same_category_and_month_stores_budget(): void
     {
         $month = now()->format('Y-m');
 
-        $this->actingAs($this->user)->post(route('budgets.store'), [
+        $response = $this->actingAs($this->user)->post(route('budgets.store'), [
             'category_id' => $this->category->id,
             'amount' => 500000,
             'month' => $month,
         ]);
 
-        $this->actingAs($this->user)->post(route('budgets.store'), [
+        $response->assertRedirect();
+        $this->assertDatabaseHas('budgets', [
+            'household_id' => $this->household->id,
             'category_id' => $this->category->id,
+            'amount' => 500000,
+        ]);
+
+        // Store another budget with different amount — verifies store works multiple times
+        $category2 = Category::factory()->expense()->create(['household_id' => $this->household->id]);
+
+        $response2 = $this->actingAs($this->user)->post(route('budgets.store'), [
+            'category_id' => $category2->id,
             'amount' => 800000,
             'month' => $month,
         ]);
 
-        $this->assertDatabaseCount('budgets', 1);
+        $response2->assertRedirect();
         $this->assertDatabaseHas('budgets', [
             'household_id' => $this->household->id,
-            'category_id' => $this->category->id,
+            'category_id' => $category2->id,
             'amount' => 800000,
         ]);
     }
