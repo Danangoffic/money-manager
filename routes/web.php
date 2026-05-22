@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
@@ -52,6 +53,9 @@ Route::middleware(['auth', 'verified', 'household'])->group(function () {
 
     // Transactions
     Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('/transactions-trashed', [TransactionController::class, 'trashed'])->name('transactions.trashed');
+    Route::patch('/transactions/{id}/restore', [TransactionController::class, 'restore'])->name('transactions.restore');
+    Route::delete('/transactions/{id}/force-delete', [TransactionController::class, 'forceDelete'])->name('transactions.force-delete');
 
     // Recurring Transactions
     Route::resource('recurring-transactions', RecurringTransactionController::class)->only(['index', 'create', 'store', 'destroy']);
@@ -66,6 +70,9 @@ Route::middleware(['auth', 'verified', 'household'])->group(function () {
 
     // Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+    // Activity Logs
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 
     // Export
     Route::get('/export/transactions', [ExportController::class, 'transactionsCsv'])->name('export.transactions');

@@ -29,22 +29,22 @@ class CategoryController extends Controller
             ['household_id' => $request->user()->household_id]
         ));
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan.');
     }
 
     public function update(StoreCategoryRequest $request, int $id): RedirectResponse
     {
         $this->categoryService->update($id, $request->validated());
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui.');
     }
 
     public function destroy(int $id): RedirectResponse
     {
         if (! $this->categoryService->delete($id)) {
-            return back()->withErrors(['category' => 'Kategori tidak bisa dihapus karena masih memiliki transaksi.']);
+            return back()->with('error', 'Kategori tidak bisa dihapus karena masih memiliki transaksi.');
         }
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus.');
     }
 }

@@ -42,6 +42,10 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
             $query->where('date', '<=', $filters['end_date']);
         }
 
+        if (! empty($filters['search'])) {
+            $query->where('description', 'like', '%' . $filters['search'] . '%');
+        }
+
         return $query->paginate($filters['per_page'] ?? 15);
     }
 
@@ -95,5 +99,27 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
             ->where('household_id', $householdId)
             ->whereBetween('date', [$startDate, $endDate])
             ->count();
+    }
+
+    public function getDeletedByHousehold(int $householdId, int $perPage = 15): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return $this->model
+            ->onlyTrashed()
+            ->where('household_id', $householdId)
+            ->with(['account', 'category', 'user'])
+            ->orderByDesc('deleted_at')
+            ->paginate($perPage);
+    }
+
+    public function restore(int $id): bool
+    {
+        $transaction = $this->model->onlyTrashed()->findOrFail($id);
+        return $transaction->restore();
+    }
+
+    public function forceDelete(int $id): bool
+    {
+        $transaction = $this->model->onlyTrashed()->findOrFail($id);
+        return $transaction->forceDelete();
     }
 }
