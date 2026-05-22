@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class TransactionRepository extends BaseRepository implements TransactionRepositoryInterface
 {
@@ -79,11 +80,16 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
 
     public function sumByMonthForRange(int $householdId, string $startDate, string $endDate): Collection
     {
+        $driver = DB::getDriverName();
+        $monthExpr = $driver === 'sqlite'
+            ? "strftime('%Y-%m', date) as month"
+            : "DATE_FORMAT(date, '%Y-%m') as month";
+
         return $this->model
             ->where('household_id', $householdId)
             ->whereIn('type', ['income', 'expense'])
             ->whereBetween('date', [$startDate, $endDate])
-            ->selectRaw("strftime('%Y-%m', date) as month, type, SUM(amount) as total")
+            ->selectRaw("$monthExpr, type, SUM(amount) as total")
             ->groupBy('month', 'type')
             ->orderBy('month')
             ->get();

@@ -11,15 +11,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-    ]);
-});
+Route::get('/', WelcomeController::class);
 
 // Household creation (no household middleware)
 Route::middleware('auth')->group(function () {
