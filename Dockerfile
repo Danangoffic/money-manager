@@ -36,7 +36,8 @@ COPY --chown=www-data:www-data --from=frontend /app/public/build ./public/build
 RUN mkdir -p /run/mysqld /var/lib/mysql \
     && chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
-VOLUME /var/lib/mysql
+# Note: For persistent MySQL data on Railway, attach a Volume mounted at /var/lib/mysql
+# via the Railway dashboard. Do NOT use Dockerfile VOLUME instruction (unsupported).
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
     CMD curl -f http://localhost/up || exit 1
