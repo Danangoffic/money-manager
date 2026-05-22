@@ -17,11 +17,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'google_id',
+        'google_token',
+        'profile_picture',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'google_token',
     ];
 
     protected $casts = [
