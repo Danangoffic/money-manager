@@ -88,4 +88,12 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
             ->orderBy('month')
             ->get();
     }
+
+    public function countByPeriod(int $householdId, string $startDate, string $endDate): int
+    {
+        return $this->model
+            ->where('household_id', $householdId)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->count();
+    }
 }

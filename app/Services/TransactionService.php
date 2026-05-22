@@ -67,6 +67,11 @@ class TransactionService
         return $this->transactionRepository->sumByMonthForRange($householdId, $startDate, $endDate);
     }
 
+    public function countByPeriod(int $householdId, string $startDate, string $endDate): int
+    {
+        return $this->transactionRepository->countByPeriod($householdId, $startDate, $endDate);
+    }
+
     private function applyBalanceChange(Transaction $transaction): void
     {
         match ($transaction->type) {
