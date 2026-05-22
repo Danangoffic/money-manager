@@ -16,4 +16,6 @@ interface TransactionRepositoryInterface extends BaseRepositoryInterface
     public function getRecentByHousehold(int $householdId, int $limit = 5): Collection;
 
     public function sumByMonthForRange(int $householdId, string $startDate, string $endDate): Collection;
+
+    public function countByPeriod(int $householdId, string $startDate, string $endDate): int;
 }
