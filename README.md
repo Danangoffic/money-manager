@@ -1,66 +1,205 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Money Manager
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi manajemen keuangan rumah tangga berbasis web dengan fitur multi-user household, budgeting, goals, dan laporan keuangan.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Layer | Teknologi |
+|-------|-----------|
+| Backend | PHP 8.1+, Laravel 10 |
+| Frontend | React 18, Inertia.js |
+| Styling | Tailwind CSS 3 |
+| Auth | Laravel Breeze + Sanctum + Google OAuth |
+| Database | SQLite (dev) / MySQL / PostgreSQL |
+| Bundler | Vite 5 |
+| Charts | Recharts |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Multi-Household** — Semua data terisolasi per household. User bisa diundang sebagai admin/member.
+- **Manajemen Akun** — CRUD akun keuangan (bank, cash, e-wallet, credit card).
+- **Transaksi** — Income, expense, transfer antar akun dengan soft delete & restore.
+- **Kategori** — Custom kategori per household untuk income & expense.
+- **Budget** — Set budget per kategori per bulan dengan alert saat mendekati/melebihi limit.
+- **Goals** — Tujuan menabung dengan tracking progress.
+- **Transaksi Berulang** — Recurring transactions (daily/weekly/monthly/yearly) diproses otomatis.
+- **Dashboard** — Statistik, chart income vs expense, top categories, net worth.
+- **Laporan** — Expense by category, income vs expense, cash flow.
+- **Activity Log** — Audit trail semua perubahan data.
+- **Export CSV** — Export data transaksi.
+- **REST API** — JSON API v1 dengan Sanctum token auth.
+- **Toast Notifications** — Feedback UI setelah setiap aksi.
 
-## Learning Laravel
+## Instalasi
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+# Clone repository
+git clone https://github.com/Danangoffic/money-manager.git
+cd money-manager
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+# Install dependencies
+composer install
+npm install
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Setup environment
+cp .env.example .env
+php artisan key:generate
 
-## Laravel Sponsors
+# Database (gunakan SQLite untuk development)
+touch database/database.sqlite
+php artisan migrate
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# Build frontend
+npm run build
 
-### Premium Partners
+# Jalankan server
+php artisan serve
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Development
 
-## Contributing
+```bash
+# Jalankan Vite dev server
+npm run dev
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Jalankan Laravel server
+php artisan serve
 
-## Code of Conduct
+# Jalankan tests
+php artisan test
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Format code
+./vendor/bin/pint
+```
 
-## Security Vulnerabilities
+## Struktur Aplikasi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```
+app/
+├── Console/Commands/       # Artisan commands (ProcessRecurringTransactions)
+├── Http/
+│   ├── Controllers/        # Web controllers (Inertia)
+│   │   └── Api/V1/        # REST API controllers
+│   ├── Middleware/         # Custom middleware
+│   ├── Requests/           # Form request validation
+│   └── Resources/          # API JSON resources
+├── Models/                 # Eloquent models
+├── Repositories/           # Repository pattern (interface + implementation)
+├── Providers/              # Service providers (DI bindings)
+└── Services/               # Business logic layer
+
+resources/js/
+├── Components/             # Reusable React components
+│   └── Dashboard/          # Dashboard chart components
+├── Layouts/                # App layouts (Authenticated, Guest)
+└── Pages/                  # Inertia page components
+    ├── Accounts/
+    ├── ActivityLogs/
+    ├── Auth/
+    ├── Budgets/
+    ├── Categories/
+    ├── Dashboard.jsx
+    ├── Goals/
+    ├── Household/
+    ├── RecurringTransactions/
+    ├── Reports/
+    └── Transactions/
+```
+
+## REST API
+
+Base URL: `/api/v1`
+
+### Authentication
+
+```
+POST   /api/v1/login          # Login, returns Bearer token
+POST   /api/v1/register       # Register new user
+POST   /api/v1/logout         # Logout (requires token)
+GET    /api/v1/user           # Get current user
+```
+
+### Endpoints (requires Bearer token)
+
+```
+GET|POST           /api/v1/accounts
+GET|PUT|DELETE     /api/v1/accounts/{id}
+
+GET|POST           /api/v1/categories
+GET|PUT|DELETE     /api/v1/categories/{id}
+
+GET|POST           /api/v1/transactions
+GET|PUT|DELETE     /api/v1/transactions/{id}
+
+GET|POST|DELETE    /api/v1/budgets
+
+GET|POST           /api/v1/goals
+GET|PUT|DELETE     /api/v1/goals/{id}
+PATCH              /api/v1/goals/{id}/progress
+```
+
+### Contoh Request
+
+```bash
+# Login
+curl -X POST http://localhost:8000/api/v1/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password"}'
+
+# Create transaction (gunakan token dari login)
+curl -X POST http://localhost:8000/api/v1/transactions \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{"account_id":1,"category_id":1,"type":"expense","amount":50000,"date":"2025-01-15"}'
+```
+
+## Testing
+
+```bash
+# Run semua test
+php artisan test
+
+# Run test suite tertentu
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+
+# Run test file spesifik
+php artisan test tests/Feature/BudgetTest.php
+php artisan test tests/Feature/Api/AuthTest.php
+```
+
+### Test Coverage
+
+| Area | Status |
+|------|--------|
+| Account CRUD | ✅ |
+| Transaction CRUD + Balance | ✅ |
+| Soft Delete & Restore | ✅ |
+| Budget CRUD & Alerts | ✅ |
+| Goals CRUD & Progress | ✅ |
+| Categories CRUD | ✅ |
+| Recurring Transactions | ✅ |
+| Reports | ✅ |
+| Activity Log | ✅ |
+| Household Management | ✅ |
+| Authentication | ✅ |
+| Profile Management | ✅ |
+| API Auth (Sanctum) | ✅ |
+| API Transactions | ✅ |
+
+## Architecture Decisions
+
+- **Repository Pattern** — Abstraksi database queries melalui interface untuk testability.
+- **Service Layer** — Business logic dipisahkan dari controllers.
+- **Soft Deletes** — Transaksi yang dihapus bisa dipulihkan.
+- **Integer Currency** — Semua amount disimpan sebagai integer (satuan terkecil) untuk menghindari floating-point errors.
+- **Household Scoping** — Semua data di-scope per household untuk multi-tenant support.
+- **Inertia.js** — SPA experience tanpa perlu API terpisah untuk frontend.
+
+## Deploy (Vercel)
+
+Project ini dikonfigurasi untuk deploy di Vercel menggunakan `vercel-php` runtime. Lihat `vercel.json` untuk konfigurasi.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
