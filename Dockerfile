@@ -1,10 +1,10 @@
 FROM php:8.2-fpm-alpine AS base
 
-RUN apk add --no-cache nginx supervisor curl \
+RUN apk add --no-cache nginx supervisor curl gettext \
     && docker-php-ext-install pdo pdo_mysql opcache
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
-COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx.conf /etc/nginx/nginx.conf.template
 COPY docker/supervisord.conf /etc/supervisord.conf
 
 WORKDIR /var/www/html
@@ -18,7 +18,8 @@ COPY . .
 RUN npm run build
 
 # --- Composer stage ---
-FROM composer:2 AS composer
+FROM php:8.2-cli-alpine AS composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-scripts
