@@ -13,6 +13,7 @@ class TransactionService
     public function __construct(
         private TransactionRepositoryInterface $transactionRepository,
         private AccountRepositoryInterface $accountRepository,
+        private ActivityLogService $activityLogService,
     ) {}
 
     public function getByHouseholdFiltered(int $householdId, array $filters = []): LengthAwarePaginator
@@ -25,16 +26,21 @@ class TransactionService
         $transaction = $this->transactionRepository->create($data);
         $this->applyBalanceChange($transaction);
 
+        $this->activityLogService->log('created', $transaction, null, null, $transaction->toArray());
+
         return $transaction;
     }
 
     public function update(int $id, array $data): Transaction
     {
         $old = $this->transactionRepository->find($id);
+        $oldValues = $old->toArray();
         $this->reverseBalanceChange($old);
 
         $transaction = $this->transactionRepository->update($id, $data);
         $this->applyBalanceChange($transaction);
+
+        $this->activityLogService->log('updated', $transaction, null, $oldValues, $transaction->toArray());
 
         return $transaction;
     }
@@ -43,6 +49,8 @@ class TransactionService
     {
         $transaction = $this->transactionRepository->find($id);
         $this->reverseBalanceChange($transaction);
+
+        $this->activityLogService->log('deleted', $transaction, null, $transaction->toArray(), null);
 
         return $this->transactionRepository->delete($id);
     }
@@ -65,6 +73,33 @@ class TransactionService
     public function sumByMonthForRange(int $householdId, string $startDate, string $endDate): Collection
     {
         return $this->transactionRepository->sumByMonthForRange($householdId, $startDate, $endDate);
+    }
+
+    public function countByPeriod(int $householdId, string $startDate, string $endDate): int
+    {
+        return $this->transactionRepository->countByPeriod($householdId, $startDate, $endDate);
+    }
+
+    public function getDeletedByHousehold(int $householdId, int $perPage = 15): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return $this->transactionRepository->getDeletedByHousehold($householdId, $perPage);
+    }
+
+    public function restore(int $id): void
+    {
+        $transaction = \App\Models\Transaction::onlyTrashed()->findOrFail($id);
+        $this->transactionRepository->restore($id);
+        $this->applyBalanceChange($transaction);
+
+        $this->activityLogService->log('restored', $transaction);
+    }
+
+    public function forceDelete(int $id): void
+    {
+        $transaction = \App\Models\Transaction::onlyTrashed()->findOrFail($id);
+        $this->activityLogService->log('deleted', $transaction, 'Transaksi dihapus permanen', $transaction->toArray(), null);
+
+        $this->transactionRepository->forceDelete($id);
     }
 
     private function applyBalanceChange(Transaction $transaction): void

@@ -27,7 +27,7 @@ class TransactionController extends Controller
             'transactions' => $this->transactionService->getByHouseholdFiltered($householdId, $request->all()),
             'accounts' => $this->accountService->getByHousehold($householdId),
             'categories' => $this->categoryService->getByHousehold($householdId),
-            'filters' => $request->only(['type', 'account_id', 'category_id', 'start_date', 'end_date']),
+            'filters' => $request->only(['type', 'account_id', 'category_id', 'start_date', 'end_date', 'search', 'per_page']),
         ]);
     }
 
@@ -51,7 +51,7 @@ class TransactionController extends Controller
             ]
         ));
 
-        return redirect()->route('transactions.index');
+        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil ditambahkan.');
     }
 
     public function edit(Request $request, int $id): Response
@@ -75,13 +75,36 @@ class TransactionController extends Controller
             ]
         ));
 
-        return redirect()->route('transactions.index');
+        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil diperbarui.');
     }
 
     public function destroy(int $id): RedirectResponse
     {
         $this->transactionService->delete($id);
 
-        return redirect()->route('transactions.index');
+        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil dihapus.');
+    }
+
+    public function trashed(Request $request): Response
+    {
+        $householdId = $request->user()->household_id;
+
+        return Inertia::render('Transactions/Trashed', [
+            'transactions' => $this->transactionService->getDeletedByHousehold($householdId),
+        ]);
+    }
+
+    public function restore(int $id): RedirectResponse
+    {
+        $this->transactionService->restore($id);
+
+        return redirect()->route('transactions.trashed')->with('success', 'Transaksi berhasil dipulihkan.');
+    }
+
+    public function forceDelete(int $id): RedirectResponse
+    {
+        $this->transactionService->forceDelete($id);
+
+        return redirect()->route('transactions.trashed')->with('success', 'Transaksi berhasil dihapus permanen.');
     }
 }

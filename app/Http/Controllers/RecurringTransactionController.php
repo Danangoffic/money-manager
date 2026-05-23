@@ -45,20 +45,20 @@ class RecurringTransactionController extends Controller
             ['household_id' => $request->user()->household_id]
         ));
 
-        return redirect()->route('recurring-transactions.index');
+        return redirect()->route('recurring-transactions.index')->with('success', 'Transaksi berulang berhasil ditambahkan.');
     }
 
     public function toggle(int $id): RedirectResponse
     {
         $this->recurringService->toggle($id);
 
-        return back();
+        return back()->with('success', 'Status transaksi berulang berhasil diubah.');
     }
 
     public function destroy(int $id): RedirectResponse
     {
         $this->recurringService->delete($id);
 
-        return redirect()->route('recurring-transactions.index');
+        return redirect()->route('recurring-transactions.index')->with('success', 'Transaksi berulang berhasil dihapus.');
     }
 }

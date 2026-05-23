@@ -1,19 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
+import StatsGrid from '@/Components/Dashboard/StatsGrid';
+import IncomeExpenseChart from '@/Components/Dashboard/IncomeExpenseChart';
+import TopCategoriesChart from '@/Components/Dashboard/TopCategoriesChart';
+import NetWorthCard from '@/Components/Dashboard/NetWorthCard';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 function formatCurrency(amount) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
-}
-
-function StatCard({ title, value, color = 'text-gray-900' }) {
-    return (
-        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-            <p className="text-sm text-gray-500">{title}</p>
-            <p className={`text-2xl font-bold ${color}`}>{formatCurrency(value)}</p>
-        </div>
-    );
 }
 
 function TransactionItem({ transaction }) {
@@ -68,7 +63,7 @@ function QuickTransactionForm({ accounts, categories, onClose }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold text-gray-900">Catat Transaksi</h3>
-                <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+                <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
             </div>
 
             {/* Type */}
@@ -145,7 +140,19 @@ function QuickTransactionForm({ accounts, categories, onClose }) {
 
 export default function Dashboard({ auth, summary, accounts, categories }) {
     const [showModal, setShowModal] = useState(false);
-    const { total_balance, income_this_month, expense_this_month, recent_transactions, budget_alerts, goals } = summary || {};
+    const {
+        total_balance,
+        income_this_month,
+        expense_this_month,
+        recent_transactions,
+        budget_alerts,
+        goals,
+        monthly_chart,
+        top_categories,
+        net_worth,
+        daily_average_expense,
+        transaction_count,
+    } = summary || {};
 
     return (
         <AuthenticatedLayout
@@ -170,15 +177,53 @@ export default function Dashboard({ auth, summary, accounts, categories }) {
                 />
             </Modal>
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <StatCard title="Total Saldo" value={total_balance || 0} />
-                        <StatCard title="Pemasukan Bulan Ini" value={income_this_month || 0} color="text-green-600" />
-                        <StatCard title="Pengeluaran Bulan Ini" value={expense_this_month || 0} color="text-red-600" />
+            <div className="py-8">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                    {/* Stats Grid */}
+                    <StatsGrid
+                        totalBalance={total_balance || 0}
+                        incomeThisMonth={income_this_month || 0}
+                        expenseThisMonth={expense_this_month || 0}
+                        dailyAverage={daily_average_expense || 0}
+                        transactionCount={transaction_count || 0}
+                    />
+
+                    {/* Charts Row: Income vs Expense + Top Categories */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <IncomeExpenseChart data={monthly_chart || []} />
+                        <TopCategoriesChart data={top_categories || []} />
                     </div>
 
+                    {/* Net Worth + Budget Alerts */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <NetWorthCard netWorth={net_worth || {}} />
+
+                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Peringatan Budget</h3>
+                            {budget_alerts?.length > 0 ? (
+                                <div className="space-y-3">
+                                    {budget_alerts.map((alert, i) => (
+                                        <div key={i}>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span>{alert.category?.name}</span>
+                                                <span className={alert.percentage >= 100 ? 'text-red-600 font-semibold' : alert.percentage >= 80 ? 'text-yellow-600 font-medium' : 'text-gray-600'}>
+                                                    {alert.percentage}%
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className={`h-2 rounded-full ${alert.percentage >= 100 ? 'bg-red-500' : alert.percentage >= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                                                    style={{ width: `${Math.min(100, alert.percentage)}%` }} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 text-sm">Semua budget dalam batas aman.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Recent Transactions + Goals */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Recent Transactions */}
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
@@ -199,54 +244,30 @@ export default function Dashboard({ auth, summary, accounts, categories }) {
                             )}
                         </div>
 
-                        {/* Budget Alerts & Goals */}
-                        <div className="space-y-6">
-                            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Peringatan Budget</h3>
-                                {budget_alerts?.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {budget_alerts.map((alert, i) => (
-                                            <div key={i}>
-                                                <div className="flex justify-between text-sm mb-1">
-                                                    <span>{alert.category?.name}</span>
-                                                    <span className={alert.percentage >= 100 ? 'text-red-600' : 'text-yellow-600'}>{alert.percentage}%</span>
-                                                </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                                    <div className={`h-2 rounded-full ${alert.percentage >= 100 ? 'bg-red-500' : 'bg-yellow-500'}`}
-                                                        style={{ width: `${Math.min(100, alert.percentage)}%` }} />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500 text-sm">Semua budget dalam batas aman.</p>
-                                )}
+                        {/* Goals */}
+                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900">Goals</h3>
+                                <Link href={route('goals.index')} className="text-sm text-indigo-600 hover:text-indigo-800">Lihat Semua</Link>
                             </div>
-
-                            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">Goals</h3>
-                                    <Link href={route('goals.index')} className="text-sm text-indigo-600 hover:text-indigo-800">Lihat Semua</Link>
+                            {goals?.length > 0 ? (
+                                <div className="space-y-3">
+                                    {goals.slice(0, 4).map((goal) => (
+                                        <div key={goal.id}>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="font-medium text-gray-700">{goal.name}</span>
+                                                <span className="text-gray-500">{formatCurrency(goal.current_amount)} / {formatCurrency(goal.target_amount)}</span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="h-2 rounded-full bg-indigo-500"
+                                                    style={{ width: `${Math.min(100, (goal.current_amount / goal.target_amount) * 100)}%` }} />
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                {goals?.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {goals.slice(0, 3).map((goal) => (
-                                            <div key={goal.id}>
-                                                <div className="flex justify-between text-sm mb-1">
-                                                    <span>{goal.name}</span>
-                                                    <span>{formatCurrency(goal.current_amount)} / {formatCurrency(goal.target_amount)}</span>
-                                                </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                                    <div className="h-2 rounded-full bg-indigo-500"
-                                                        style={{ width: `${Math.min(100, (goal.current_amount / goal.target_amount) * 100)}%` }} />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500 text-sm">Belum ada goals.</p>
-                                )}
-                            </div>
+                            ) : (
+                                <p className="text-gray-500 text-sm">Belum ada goals.</p>
+                            )}
                         </div>
                     </div>
                 </div>

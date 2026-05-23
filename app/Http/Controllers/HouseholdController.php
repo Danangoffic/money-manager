@@ -24,7 +24,7 @@ class HouseholdController extends Controller
 
         $this->householdService->createWithOwner($request->user(), $request->name);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')->with('success', 'Household berhasil dibuat.');
     }
 
     public function settings(Request $request): Response
@@ -45,7 +45,7 @@ class HouseholdController extends Controller
         $household = $request->user()->household;
         $household->update(['name' => $request->name]);
 
-        return back();
+        return back()->with('success', 'Nama household berhasil diperbarui.');
     }
 
     public function inviteMember(InviteMemberRequest $request): RedirectResponse
@@ -54,10 +54,10 @@ class HouseholdController extends Controller
         $member = $this->householdService->inviteMember($household, $request->email);
 
         if (! $member) {
-            return back()->withErrors(['email' => 'User sudah menjadi anggota atau tidak ditemukan.']);
+            return back()->with('error', 'User sudah menjadi anggota atau tidak ditemukan.');
         }
 
-        return back();
+        return back()->with('success', 'Anggota berhasil diundang.');
     }
 
     public function removeMember(Request $request, int $userId): RedirectResponse
@@ -65,7 +65,7 @@ class HouseholdController extends Controller
         $household = $request->user()->household;
         $this->householdService->removeMember($household, $userId);
 
-        return back();
+        return back()->with('success', 'Anggota berhasil dihapus.');
     }
 
     public function changeRole(Request $request, int $memberId): RedirectResponse
@@ -75,6 +75,6 @@ class HouseholdController extends Controller
         $member = $request->user()->household->householdMembers()->findOrFail($memberId);
         $this->householdService->changeRole($member, $request->role);
 
-        return back();
+        return back()->with('success', 'Role anggota berhasil diubah.');
     }
 }

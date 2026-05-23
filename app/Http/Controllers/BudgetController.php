@@ -37,13 +37,13 @@ class BudgetController extends Controller
             ['household_id' => $request->user()->household_id]
         ));
 
-        return back();
+        return back()->with('success', 'Budget berhasil disimpan.');
     }
 
     public function destroy(int $id): RedirectResponse
     {
         $this->budgetService->delete($id);
 
-        return back();
+        return back()->with('success', 'Budget berhasil dihapus.');
     }
 }

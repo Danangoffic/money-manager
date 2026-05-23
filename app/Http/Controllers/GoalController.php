@@ -27,14 +27,14 @@ class GoalController extends Controller
             ['household_id' => $request->user()->household_id]
         ));
 
-        return redirect()->route('goals.index');
+        return redirect()->route('goals.index')->with('success', 'Goal berhasil ditambahkan.');
     }
 
     public function update(StoreGoalRequest $request, int $id): RedirectResponse
     {
         $this->goalService->update($id, $request->validated());
 
-        return redirect()->route('goals.index');
+        return redirect()->route('goals.index')->with('success', 'Goal berhasil diperbarui.');
     }
 
     public function updateProgress(Request $request, int $id): RedirectResponse
@@ -43,13 +43,13 @@ class GoalController extends Controller
 
         $this->goalService->updateProgress($id, $request->current_amount);
 
-        return back();
+        return back()->with('success', 'Progress goal berhasil diperbarui.');
     }
 
     public function destroy(int $id): RedirectResponse
     {
         $this->goalService->delete($id);
 
-        return redirect()->route('goals.index');
+        return redirect()->route('goals.index')->with('success', 'Goal berhasil dihapus.');
     }
 }
